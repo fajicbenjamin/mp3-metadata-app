@@ -3,13 +3,13 @@
     <h1>Welcome to MP3 Metadata App</h1>
     <p>
       You can use this app to add metadata to .mp3 files, if you would like to have<br>
-      additional data shown about your song (at the moment, only artwork is being tagged)<br>
-      when playing, i.e. in your car player.
+      additional data shown about your song when playing.
     </p>
     <p>
       It is using Deezer API for fetching data, so if the song is available on Deezer,<br>
       it should be fetched. However, app will search for song by file name (and get first search result)<br>
-      so name your files before uploading and avoid special and unnecessary characters. i.e. <i>XXXTentacion Sad</i>
+      so name your files before uploading and avoid special and unnecessary characters.<br>
+      i.e. valid file name could be <i>XXXTentacion Sad</i>
     </p>
 
     <p>
@@ -155,7 +155,7 @@ export default {
         this.$http.get(this.proxyUrl + songData.cover, {
             responseType: 'arraybuffer'
         }).then(response => {
-            const blob = this.writeSongWithTags(response.data, this.songsBuffers[index]);
+            const blob = this.writeSongWithTags(response.data, this.songsBuffers[index], songData);
             saveAs(blob, `${songData.artist} - ${songData.title}.mp3`);
 
             this.files[index].status = 'Successful!'
@@ -171,13 +171,16 @@ export default {
       }
 
       let songData = response.data.data[0];
-
       let coverUrl = response.data.data[0].album.cover;
 
       // if you want to get images from http://
       if (coverUrl.charAt(4) === 's')
         coverUrl = coverUrl.slice(0, 4) + coverUrl.slice(5, coverUrl.length);
 
+      // you could even go further and make more requests to
+      // Deezer API to get all possible information about track,
+      // album or artist(s) respectively. For sake of having this
+      // app on test proxy, I will keep it one API call at the moment
       return {
         artist: songData.artist.name,
         title: songData.title,
@@ -185,14 +188,17 @@ export default {
         cover: coverUrl
       };
     },
-    writeSongWithTags(imageBuffer, songBuffer) {
+    writeSongWithTags(imageBuffer, songBuffer, songData) {
       const buffer = Buffer.from(imageBuffer, 'base64');
       const writer = new ID3Writer(songBuffer);
 
-      writer.setFrame('APIC', {
-        type: 3,
-        data: buffer,
-        description: 'Super picture'
+      writer.setFrame('TIT2', songData.title)
+              .setFrame('TPE1', [songData.artist])
+              .setFrame('TALB', songData.album)
+              .setFrame('APIC', {
+                type: 3,
+                data: buffer,
+                description: songData.album
       });
       writer.addTag();
 
