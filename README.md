@@ -6,8 +6,7 @@
 Live: https://dreamy-carson-29e913.netlify.app/
 
 Web app to add metadata to .mp3 files, if you would like to have
-additional data shown about your song (at the moment, only artwork is being tagged)
-when playing, i.e. in your car player.
+additional data shown about your song, i.e. in your car player.
 
 It is using Deezer API for fetching data, so if the song is available on Deezer,
 it should be fetched. However, app will search for song by file name (and get first search result)
