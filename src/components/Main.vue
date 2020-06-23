@@ -42,7 +42,9 @@
           <span>
             <button @click="removeFile(index)" title="Remove">X</button>
           </span>
-          <span style="color: green">{{ file.status }}</span>
+          <span :style="{ 'color': file.status === 'Successful!' ? 'green' : 'red' }">
+            {{ file.status }}
+          </span>
         </li>
       </ul>
     </div>
@@ -135,6 +137,7 @@ export default {
         const songData = await promise;
         this.$set(this.songsData, index, songData);
       });
+
       Promise.all(promises)
               .then(() => {
                 this.addTags();
@@ -147,8 +150,10 @@ export default {
     },
     addTags() {
       this.songsData.forEach((songData, index) => {
-        if (!songData)
+        if (!songData) {
+          this.files[index].status = 'Not found';
           return;
+        }
 
         this.files[index].cover = songData.cover;
 
