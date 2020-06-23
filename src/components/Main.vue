@@ -176,7 +176,7 @@ export default {
       }
 
       let songData = response.data.data[0];
-      let coverUrl = response.data.data[0].album.cover;
+      let coverUrl = response.data.data[0].album.cover_big;
 
       // if you want to get images from http://
       if (coverUrl.charAt(4) === 's')
