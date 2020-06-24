@@ -29,7 +29,7 @@
       <p>
         Add your files here:
       </p>
-      <div class="file-wrappera">
+      <div class="file-wrapper">
         <input type="file" name="file-input" multiple @change="handleFileInput">
         Click or drag to insert.
       </div>
@@ -230,15 +230,15 @@ export default {
   .container {
     border: 2px dashed gray;
     min-height: 120px;
+    min-width: 260px;
     margin: 0 auto;
     max-width: 50%;
   }
   .file-wrapper {
-    text-align: center;
     width: 200px;
-    height: 3em;
-    line-height: 3em;
-    vertical-align: middle;
+    height: 48px;
+    line-height: 48px;
+    position: relative;
     overflow: hidden;
     background: gray; /* and other things to make it pretty */
     margin: 0 auto;
@@ -250,8 +250,8 @@ export default {
     cursor: pointer;
     opacity: 0.0;
     filter: alpha(opacity=0);
-    font-size: 300px;
-    height: 200px;
+    height: 48px;
+    width: 200px;
   }
   ul {
     list-style: none;
