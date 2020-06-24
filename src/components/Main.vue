@@ -1,5 +1,5 @@
 <template>
-  <div class="hello" @dragover.prevent @drop.prevent>
+  <div class="main" @dragover.prevent @drop.prevent>
     <h1>Welcome to MP3 Metadata App</h1>
     <p>
       You can use this app to add metadata to .mp3 files, if you would like to have<br>
@@ -21,52 +21,26 @@
 
     <div class="error" v-if="responseError">{{ responseError }}</div>
 
-    <div class="container"
-         @dragleave="fileDragOut"
-         @dragover="fileDragIn"
-         @drop="handleFileDrop"
-         :style="{ 'background-color': color }">
-      <p>
-        Add your files here:
-      </p>
-      <div class="file-wrapper">
-        <input type="file" name="file-input" multiple @change="handleFileInput">
-        Click or drag to insert.
-      </div>
+    <file-upload :files="files" :songs-buffers="songsBuffers"></file-upload>
 
-      <ul>
-        <li v-for="(file, index) in files" :key="file.name + new Date()">
-          <img class="art-image" src="@/assets/placeholder.jpg" alt="cover" v-if="file.cover === ''">
-          <img class="art-image" :src="file.cover" alt="cover" v-else>
-          <span>{{ file.name }}</span>
-          <span>
-            <button @click="removeFile(index)" title="Remove">X</button>
-          </span>
-          <span :style="{ 'color': file.status === 'Successful!' ? 'green' : 'red' }">
-            {{ file.status }}
-          </span>
-        </li>
-      </ul>
-    </div>
+    <button class="button" @click="processList">Process</button>
 
-    <button class="button button2" style="margin-top: 50px" @click="processList">Process</button>
-
+    <songs-list :files="files"></songs-list>
   </div>
 </template>
 
 <script>
 import ID3Writer from 'browser-id3-writer'
 import { saveAs } from 'file-saver';
+import FileUpload from "./FileUpload";
+import SongsList from "./SongsList";
 
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  },
+  name: 'Main',
+  components: {SongsList, FileUpload},
   data: function () {
     return {
       files: [],
-      color: 'gainsboro',
       songsData: [],
       songsBuffers: [],
       proxyUrl: 'https://cors-anywhere.herokuapp.com/',
@@ -74,57 +48,6 @@ export default {
     }
   },
   methods: {
-    handleFileDrop(e) {
-      this.createArrayBuffer(e);
-      this.fileDragOut(e);
-      let droppedFiles = e.dataTransfer.files;
-      if(!droppedFiles) return;
-      this.getFiles(droppedFiles)
-    },
-    handleFileInput(e) {
-      this.createArrayBuffer(e);
-      let files = e.target.files;
-      if(!files) return;
-      this.getFiles(files)
-    },
-    getFiles(files) {
-      ([...files]).forEach(f => {
-        const object = Object.assign({
-          name: f.name,
-          size: f.size,
-          cover: '',
-          status: ''
-        });
-        this.files.push(object);
-      });
-    },
-    createArrayBuffer(e) {
-      const files = e.target.files === undefined ? e.dataTransfer.files : e.target.files;
-
-      files.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          this.$set(this.songsBuffers, index, reader.result);
-          // go next
-        };
-        // attach event, that will be fired, when read is end
-        reader.onerror = function () {
-          // handle error
-          console.error('Reader error', reader.error);
-        };
-
-        reader.readAsArrayBuffer(file);
-      });
-    },
-    removeFile(fileKey){
-      this.files.splice(fileKey, 1)
-    },
-    fileDragIn() {
-      this.color = 'white'
-    },
-    fileDragOut() {
-      this.color = 'gainsboro'
-    },
     processList() {
       let promises = [];
 
@@ -178,10 +101,6 @@ export default {
       let songData = response.data.data[0];
       let coverUrl = response.data.data[0].album.cover_big;
 
-      // if you want to get images from http://
-      if (coverUrl.charAt(4) === 's')
-        coverUrl = coverUrl.slice(0, 4) + coverUrl.slice(5, coverUrl.length);
-
       // to get all artists (main and featured), one more API
       // call is required. If you are tight with API calls
       // and limits you can use info from previous request (only main artist)
@@ -227,49 +146,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .container {
-    border: 2px dashed gray;
-    min-height: 120px;
-    min-width: 260px;
-    margin: 0 auto;
-    max-width: 50%;
-  }
-  .file-wrapper {
-    width: 200px;
-    height: 48px;
-    line-height: 48px;
-    position: relative;
-    overflow: hidden;
-    background: gray; /* and other things to make it pretty */
-    margin: 0 auto;
-  }
-  .file-wrapper input {
-    position: absolute;
-    top: 0;
-    right: 0;
-    cursor: pointer;
-    opacity: 0.0;
-    filter: alpha(opacity=0);
-    height: 48px;
-    width: 200px;
-  }
-  ul {
-    list-style: none;
-  }
-  ul li {
-    display: table;
-    text-align: center;
-  }
-  ul li span {
-    padding: 0 20px;
-    display: table-cell;
-    vertical-align: middle;
-  }
-  .art-image {
-    width: 120px;
-    height: 120px;
-    margin-top: 10px;
-  }
   .button {
     background-color: #4CAF50; /* Green */
     border: none;
@@ -279,12 +155,12 @@ export default {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
     cursor: pointer;
     -webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
+    margin: 50px 2px 4px;
   }
-  .button2:hover {
+  .button:hover {
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
   }
   .error {
@@ -294,5 +170,8 @@ export default {
     width: 50%;
     margin: 20px auto;
     line-height: 50px;
+  }
+  .main p:last-of-type {
+    margin-bottom: 50px;
   }
 </style>
