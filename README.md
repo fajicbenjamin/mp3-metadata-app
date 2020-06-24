@@ -1,5 +1,10 @@
 ![logo](src/assets/logo.png)
+
 # MP3 Metadata App
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ccb9eead-ef6e-42f6-8e22-bab23843cf2d/deploy-status)](https://app.netlify.com/sites/dreamy-carson-29e913/deploys)
+
+Live: https://dreamy-carson-29e913.netlify.app/
+
 Web app to add metadata to .mp3 files, if you would like to have
 additional data shown about your song, i.e. in your car player.
 
