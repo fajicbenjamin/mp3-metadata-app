@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
+    <img alt="MP3 logo" src="./assets/logo.png">
     <Main/>
   </div>
 </template>
