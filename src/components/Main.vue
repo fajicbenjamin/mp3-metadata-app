@@ -161,7 +161,7 @@ export default {
             responseType: 'arraybuffer'
         }).then(response => {
             const blob = this.writeSongWithTags(response.data, this.songsBuffers[index], songData);
-            saveAs(blob, `${songData.artist} - ${songData.title}.mp3`);
+            saveAs(blob, `${songData.artist.join(', ')} - ${songData.title}.mp3`);
 
             this.files[index].status = 'Successful!'
         })
@@ -182,23 +182,33 @@ export default {
       if (coverUrl.charAt(4) === 's')
         coverUrl = coverUrl.slice(0, 4) + coverUrl.slice(5, coverUrl.length);
 
-      // you could even go further and make more requests to
-      // Deezer API to get all possible information about track,
-      // album or artist(s) respectively. For sake of having this
-      // app on test proxy, I will keep it one API call at the moment
+      // to get all artists (main and featured), one more API
+      // call is required. If you are tight with API calls
+      // and limits you can use info from previous request (only main artist)
+      // let artist = songData.artist.name
+      let artist = await this.getTrackContributorsFromDeezerApi(songData.id);
+
       return {
-        artist: songData.artist.name,
+        artist: artist,
         title: songData.title,
         album: songData.album.title,
         cover: coverUrl
       };
+    },
+    async getTrackContributorsFromDeezerApi(trackId) {
+      let response = await this.$http.get(`${this.proxyUrl}https://api.deezer.com/track/${trackId}`);
+
+      const artists = [];
+      response.data.contributors.forEach(contributor => artists.push(contributor.name));
+
+      return artists;
     },
     writeSongWithTags(imageBuffer, songBuffer, songData) {
       const buffer = Buffer.from(imageBuffer, 'base64');
       const writer = new ID3Writer(songBuffer);
 
       writer.setFrame('TIT2', songData.title)
-              .setFrame('TPE1', [songData.artist])
+              .setFrame('TPE1', songData.artist)
               .setFrame('TALB', songData.album)
               .setFrame('APIC', {
                 type: 3,
