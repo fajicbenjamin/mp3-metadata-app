@@ -14,10 +14,6 @@ so name your files before uploading and avoid special and unnecessary characters
 
 i.e. valid file name could be **_XXXTentacion Sad_**
 
-Note: App is using demo proxy ([cors-anywhere.herokuapp.com](https://cors-anywhere.herokuapp.com/)) to reach Deezer API.
-The number of requests is limited to 200 per 60 minutes.
-Please self-host [CORS Anywhere](https://github.com/Rob--W/cors-anywhere/) if you need more quota or embed this app within your server application.
-
 ## Project setup
 ```
 npm install

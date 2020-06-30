@@ -12,13 +12,6 @@
       i.e. valid file name could be <i>XXXTentacion Sad</i>
     </p>
 
-    <p>
-      Note: App is using demo proxy (<a href="https://cors-anywhere.herokuapp.com/">cors-anywhere.herokuapp.com</a>) to reach Deezer API.<br>
-      The number of requests is limited to 200 per 60 minutes.<br>
-      Please self-host <a href="https://github.com/Rob--W/cors-anywhere">CORS Anywhere</a> if you need more quota or embed
-      this app within your server application.
-    </p>
-
     <div class="error" v-if="responseError">{{ responseError }}</div>
 
     <file-upload :files="files" :songs-buffers="songsBuffers"></file-upload>
@@ -43,7 +36,6 @@ export default {
       files: [],
       songsData: [],
       songsBuffers: [],
-      proxyUrl: 'https://cors-anywhere.herokuapp.com/',
       responseError: ''
     }
   },
@@ -80,7 +72,7 @@ export default {
 
         this.files[index].cover = songData.cover;
 
-        this.$http.get(this.proxyUrl + songData.cover, {
+        this.$http.get(songData.cover, {
             responseType: 'arraybuffer'
         }).then(response => {
             const blob = this.writeSongWithTags(response.data, this.songsBuffers[index], songData);
@@ -92,19 +84,15 @@ export default {
       })
     },
     async getSongDataFromDeezerApi(songName) {
-      let response = await this.$http.get(`${this.proxyUrl}https://api.deezer.com/search?q=${songName}`);
+      let response = await this.makeApiCall(`/search?q=${songName}`);
 
-      if (!response.data.total) {
+      if (!response.total) {
         return null
       }
 
-      let songData = response.data.data[0];
-      let coverUrl = response.data.data[0].album.cover_big;
+      let songData = response.data[0];
+      let coverUrl = response.data[0].album.cover_big;
 
-      // to get all artists (main and featured), one more API
-      // call is required. If you are tight with API calls
-      // and limits you can use info from previous request (only main artist)
-      // let artist = songData.artist.name
       let artist = await this.getTrackContributorsFromDeezerApi(songData.id);
 
       return {
@@ -115,10 +103,10 @@ export default {
       };
     },
     async getTrackContributorsFromDeezerApi(trackId) {
-      let response = await this.$http.get(`${this.proxyUrl}https://api.deezer.com/track/${trackId}`);
+      let response = await this.makeApiCall(`/track/${trackId}`);
 
       const artists = [];
-      response.data.contributors.forEach(contributor => artists.push(contributor.name));
+      response.contributors.forEach(contributor => artists.push(contributor.name));
 
       return artists;
     },
@@ -139,7 +127,15 @@ export default {
       // whatever implementation is needed for saving file
       // can be returned here
       return writer.getBlob();
-    }
+    },
+    makeApiCall(url) {
+      return new Promise((resolve) => {
+        // eslint-disable-next-line no-undef
+        DZ.api(url, (response) => {
+          resolve(response)
+        });
+      })
+    },
   }
 }
 </script>
