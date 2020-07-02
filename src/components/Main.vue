@@ -64,7 +64,7 @@ export default {
 
     },
     addTags() {
-      this.songsData.forEach((songData, index) => {
+      this.songsData.forEach(async (songData, index) => {
         if (!songData) {
           this.files[index].status = 'Not found';
           return;
@@ -72,15 +72,11 @@ export default {
 
         this.files[index].cover = songData.cover;
 
-        this.$http.get(songData.cover, {
-            responseType: 'arraybuffer'
-        }).then(response => {
-            const blob = this.writeSongWithTags(response.data, this.songsBuffers[index], songData);
-            saveAs(blob, `${songData.artist.join(', ')} - ${songData.title}.mp3`);
+        let coverImageBuffer = await this.getCoverImageFromDeezer(songData.cover);
 
-            this.files[index].status = 'Successful!'
-        })
-
+        const blob = this.writeSongWithTags(coverImageBuffer.data, this.songsBuffers[index], songData);
+        saveAs(blob, `${songData.artist.join(', ')} - ${songData.title}.mp3`);
+        this.files[index].status = 'Successful!'
       })
     },
     async getSongDataFromDeezerApi(songName) {
@@ -109,6 +105,11 @@ export default {
       response.contributors.forEach(contributor => artists.push(contributor.name));
 
       return artists;
+    },
+    getCoverImageFromDeezer(coverUrl) {
+      return this.$http.get(coverUrl, {
+        responseType: 'arraybuffer'
+      });
     },
     writeSongWithTags(imageBuffer, songBuffer, songData) {
       const buffer = Buffer.from(imageBuffer, 'base64');
