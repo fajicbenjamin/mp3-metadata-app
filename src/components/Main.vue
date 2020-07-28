@@ -36,14 +36,47 @@ export default {
       files: [],
       songsData: [],
       songsBuffers: [],
-      responseError: ''
+      responseError: '',
+      batchSize: 10
     }
   },
   methods: {
-    processList() {
+    async processList() {
+      // processing songs in batches to avoid
+      // Deezer API rate limits, as well as give
+      // enough time browser to download all the files
+
+      if (this.files.length < this.batchSize)
+        this.processSongs();
+      else {
+        let batchReady = false;
+
+        // iterate through files and set flag to true
+        // when it is reached batch size, i.e. 10
+        // then process songs, set timeout to 5 seconds
+        // and reset batch flag
+        for (let i = 1; i <= this.files.length; i++) {
+          if (i % this.batchSize === 0 || i === this.files.length)
+            batchReady = true;
+
+          if (batchReady) {
+            this.processSongs(i);
+            await new Promise(r => setTimeout(r, 5000));
+            batchReady = false;
+          }
+        }
+      }
+    },
+    processSongs(batchIndex) {
       let promises = [];
 
       this.files.forEach(async (song, index) => {
+        // since current implementation depends on initial
+        // indexes in array of all loaded files, current batch index
+        // is passed to avoid processing already processed files
+        if (index >= batchIndex || song.status !== 'Uploaded')
+          return;
+
         const songName = song.name.split('.').slice(0, -1).join('.');
 
         const promise = this.getSongDataFromDeezerApi(songName);
@@ -55,7 +88,7 @@ export default {
 
       Promise.all(promises)
               .then(() => {
-                this.addTags();
+                this.addTags(batchIndex);
               })
               .catch((e) => {
                 // Handle errors here
@@ -63,12 +96,18 @@ export default {
               });
 
     },
-    addTags() {
+    addTags(batchIndex) {
       this.songsData.forEach(async (songData, index) => {
         if (!songData) {
           this.files[index].status = 'Not found';
           return;
         }
+
+        // since current implementation depends on initial
+        // indexes in array of all loaded files, current batch index
+        // is passed to avoid processing already processed files
+        if (index >= batchIndex || this.files[index].status === 'Successful!')
+          return;
 
         this.files[index].cover = songData.cover;
 
