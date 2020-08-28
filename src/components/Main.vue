@@ -27,6 +27,7 @@ import ID3Writer from 'browser-id3-writer'
 import { saveAs } from 'file-saver';
 import FileUpload from "./FileUpload";
 import SongsList from "./SongsList";
+import api from '../api/index';
 
 export default {
   name: 'Main',
@@ -79,7 +80,7 @@ export default {
 
         const songName = song.name.split('.').slice(0, -1).join('.');
 
-        const promise = this.getSongDataFromDeezerApi(songName);
+        const promise = api.getSongData(songName);
         promises.push(promise);
 
         const songData = await promise;
@@ -111,44 +112,12 @@ export default {
 
         this.files[index].cover = songData.cover;
 
-        let coverImageBuffer = await this.getCoverImageFromDeezer(songData.cover);
+        let coverImageBuffer = await api.getCoverImage(songData.cover);
 
         const blob = this.writeSongWithTags(coverImageBuffer.data, this.songsBuffers[index], songData);
         saveAs(blob, `${songData.artist.join(', ')} - ${songData.title}.mp3`);
         this.files[index].status = 'Successful!'
       })
-    },
-    async getSongDataFromDeezerApi(songName) {
-      let response = await this.makeApiCall(`/search?q=${songName}`);
-
-      if (!response.total) {
-        return null
-      }
-
-      let songData = response.data[0];
-      let coverUrl = response.data[0].album.cover_big;
-
-      let artist = await this.getTrackContributorsFromDeezerApi(songData.id);
-
-      return {
-        artist: artist,
-        title: songData.title,
-        album: songData.album.title,
-        cover: coverUrl
-      };
-    },
-    async getTrackContributorsFromDeezerApi(trackId) {
-      let response = await this.makeApiCall(`/track/${trackId}`);
-
-      const artists = [];
-      response.contributors.forEach(contributor => artists.push(contributor.name));
-
-      return artists;
-    },
-    getCoverImageFromDeezer(coverUrl) {
-      return this.$http.get(coverUrl, {
-        responseType: 'arraybuffer'
-      });
     },
     writeSongWithTags(imageBuffer, songBuffer, songData) {
       const buffer = Buffer.from(imageBuffer, 'base64');
@@ -167,15 +136,7 @@ export default {
       // whatever implementation is needed for saving file
       // can be returned here
       return writer.getBlob();
-    },
-    makeApiCall(url) {
-      return new Promise((resolve) => {
-        // eslint-disable-next-line no-undef
-        DZ.api(url, (response) => {
-          resolve(response)
-        });
-      })
-    },
+    }
   }
 }
 </script>
