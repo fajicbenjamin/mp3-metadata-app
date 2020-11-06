@@ -93,4 +93,20 @@
         margin-left: auto;
         margin-right: 7rem;
     }
+
+    @media only screen and (max-width: 768px) {
+        .container {
+            max-width: 100%;
+        }
+        .upload-status {
+            margin-right: 0;
+        }
+        .button {
+            padding: 1px 6px;
+        }
+        .art-image {
+            width: 80px;
+            height: 80px;
+        }
+    }
 </style>
