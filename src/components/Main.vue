@@ -35,7 +35,6 @@ export default {
   data: function () {
     return {
       files: [],
-      songsData: [],
       songsBuffers: [],
       responseError: '',
       batchSize: 10
@@ -69,8 +68,6 @@ export default {
       }
     },
     processSongs(batchIndex) {
-      let promises = [];
-
       this.files.forEach(async (song, index) => {
         // since current implementation depends on initial
         // indexes in array of all loaded files, current batch index
@@ -79,45 +76,21 @@ export default {
           return;
 
         const songName = song.name.split('.').slice(0, -1).join('.');
+        const songData = await api.getSongData(songName);
 
-        const promise = api.getSongData(songName);
-        promises.push(promise);
-
-        const songData = await promise;
-        this.$set(this.songsData, index, songData);
-      });
-
-      Promise.all(promises)
-              .then(() => {
-                this.addTags(batchIndex);
-              })
-              .catch((e) => {
-                // Handle errors here
-                this.responseError = `${e.message} (${e.response.statusText})`;
-              });
-
-    },
-    addTags(batchIndex) {
-      this.songsData.forEach(async (songData, index) => {
         if (!songData) {
           this.files[index].status = 'Not found';
           return;
         }
 
-        // since current implementation depends on initial
-        // indexes in array of all loaded files, current batch index
-        // is passed to avoid processing already processed files
-        if (index >= batchIndex || this.files[index].status === 'Successful!')
-          return;
-
         this.files[index].cover = songData.cover;
-
         let coverImageBuffer = await api.getCoverImage(songData.cover);
 
         const blob = this.writeSongWithTags(coverImageBuffer.data, this.songsBuffers[index], songData);
         saveAs(blob, `${songData.artist.join(', ')} - ${songData.title}.mp3`);
-        this.files[index].status = 'Successful!'
-      })
+        this.files[index].status = 'Successful!';
+        this.files[index].name = songData.title
+      });
     },
     writeSongWithTags(imageBuffer, songBuffer, songData) {
       const buffer = Buffer.from(imageBuffer, 'base64');
