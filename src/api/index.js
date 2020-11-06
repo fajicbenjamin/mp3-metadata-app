@@ -8,15 +8,13 @@ const getSongData = async (songName) => {
     }
 
     let songData = response.data[0];
-    let coverUrl = response.data[0].album.cover_big;
-
     let artist = await getTrackContributors(songData.id);
 
     return {
         artist: artist,
         title: songData.title,
         album: songData.album.title,
-        cover: coverUrl
+        cover: songData.album.cover_big
     };
 };
 

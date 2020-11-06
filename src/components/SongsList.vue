@@ -5,7 +5,7 @@
                 <img class="art-image" src="@/assets/placeholder.jpg" alt="cover" v-if="file.cover === ''">
                 <img class="art-image" :src="file.cover" alt="cover" v-else>
                 <span>{{ file.name }}</span>
-                <span :style="{ 'color': statusColor(file.status) }">
+                <span class="upload-status" :style="{ 'color': statusColor(file.status) }">
                     {{ file.status }}
                 </span>
                 <button class="button button-outline" @click="removeFile(index)" title="Remove">&#10005;</button>
@@ -85,9 +85,12 @@
         color: black;
         border: 2px solid dimgray;
     }
-
     .button-outline:hover {
         background-color: dimgray;
         color: white;
+    }
+    .upload-status {
+        margin-left: auto;
+        margin-right: 7rem;
     }
 </style>
