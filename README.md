@@ -1,7 +1,7 @@
 ![logo](src/assets/logo.png)
 
 # MP3 Metadata App
-[![Netlify Status](https://api.netlify.com/api/v1/badges/ccb9eead-ef6e-42f6-8e22-bab23843cf2d/deploy-status)](https://app.netlify.com/sites/dreamy-carson-29e913/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ccb9eead-ef6e-42f6-8e22-bab23843cf2d/deploy-status)](https://app.netlify.com/sites/mp3-tags/deploys)
 
 Live: [DEMO](https://mp3-tags.netlify.app/)
 
