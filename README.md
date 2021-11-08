@@ -12,8 +12,6 @@ It is using Deezer API for fetching data, so if the song is available on Deezer,
 it should be fetched. However, app will search for song by file name (and get first search result)
 so name your files before uploading and avoid special and unnecessary characters. 
 
-i.e. valid file name could be **_XXXTentacion Sad_**
-
 ## Project setup
 ```
 npm install
